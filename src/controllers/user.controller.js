@@ -9,15 +9,14 @@ const registerUser = asyncHandler(async (req, res)=> {
     // validation - not empty
     // check if user already exists: username, email
     // check for images, check for avatar
-    // upload them to cloudinary, avatar
+    // upload them to cloudinary, check for avatar
     // create user object - create entry in db
     // remove password and refresh token field from response
     // check for user creation
-    // return response
+    // return res
 
-    console.log("Handler hit ✅");
     const { fullName, email, username, password } = req.body;
-    console.log("email:", email);
+    // console.log("email:", email);
 
     if(
         [fullName, email, password, username].some((field)=>
@@ -26,14 +25,14 @@ const registerUser = asyncHandler(async (req, res)=> {
         throw new apiError(400, "All fields are required");
     }
 
-    const existedUser = user.findOne({
+    const existedUser = await user.findOne({
         $or: [{username}, {email}]
     })
     if(existedUser){
         throw new apiError(409, "User with email or username already exists");
     }
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
     if(!avatarLocalPath){
         throw new apiError(400, "Avatar file is required");
@@ -46,7 +45,7 @@ const registerUser = asyncHandler(async (req, res)=> {
          throw new apiError(400, "Avatar file is required");
     }
 
-    const user = await user.create({
+    const User = await user.create({
         fullName,
         avatar: avatar.url,
         coverImage: coverImage?.url || "",
@@ -54,17 +53,16 @@ const registerUser = asyncHandler(async (req, res)=> {
         password,
         username: username.toLowerCase()
     })
-    const createdUser = await user.findById(user._id).select(
+    const createdUser = await user.findById(User._id).select(
         "-password -refreshToken"
     )
     if(!createdUser){
         throw new apiError(500, "Something went wrong while registering the user");
     }
-    return response.status(201).json(
+    return res.status(201).json(
         new apiResponse(200, createdUser, "User registed successfully")
     )
-    
-
-
 })
-export { registerUser };
+export { registerUser }
+
+
