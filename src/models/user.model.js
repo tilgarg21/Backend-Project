@@ -26,11 +26,22 @@ const userSchema = new Schema(
             index: true
         },
         avatar: {
+            url: {
             type: String, // cloudinary url
             required: true
+            },
+            publicId: {
+                type: String, // cloudinary public_id
+            required: true
+            }
         },
         coverImage: {
+            url: {
             type: String, // cloudinary url
+            },
+            publicId: {
+                  type: String // cloudinary public_id
+            }
         },
         watchHistory: [
             {
@@ -87,4 +98,4 @@ userSchema.methods.generateRefreshToken = function(){
     )
 }
 
-export const user = mongoose.model("User", userSchema);
+export const User = mongoose.model("User", userSchema);
